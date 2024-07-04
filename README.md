@@ -8,22 +8,33 @@ INITIAL SETUP
 	
 sudo apt update
 Assumes installation in a folder called translation located in the home folder.
+
 mkdir ~/translation; cd ~/translation
+
 Install dependencies using apt
+
 sudo apt install g++ git subversion automake libtool zlib1g-dev libicu-dev libboost-all-dev libbz2-dev liblzma-dev python-dev graphviz imagemagick make cmake libgoogle-perftools-dev autoconf doxygen
+
 If package already present, apt will ignore.
+
 Clone from git: git clone https://github.com/moses-smt/mosesdecoder.git
 
 BOOST
+
 Download from sourceforge: wget http://downloads.sourceforge.net/project/boost/boost/1.80.0/boost_1_80_0.tar.gz
 Extract: tar zxvf boost_1_80_0.tar.gz
+
 Go to directory: cd boost_1_80_0/
+
 Run: ./bootstrap.sh
-Compile and echo FAILURE if unsuccessful: ./b2 -j4 --prefix=$PWD --libdir=$PWD/lib64 --layout=system link=static install || echo FAILURE
+
+Compile and
+echo FAILURE if unsuccessful: ./b2 -j4 --prefix=$PWD --libdir=$PWD/lib64 --layout=system link=static install || echo FAILURE
 Gcc upgrade and downgrade 
 If successful, there should be no failed targets else it will be boost compatibility issue. 
 
 	If boost is not compatible run the script to download all the versions of boost and compile.
+ 
 #!/bin/bash
 for ver in $(seq $1 -1 $2); do
   echo $ver
@@ -34,6 +45,7 @@ for ver in $(seq $1 -1 $2); do
   ./b2 -j4 --prefix=$PWD --libdir=$PWD/lib64 --layout=system link=static install || echo FAILURE > install_log.txt
   cd ../
 done
+
 # wget http://downloads.sourceforge.net/project/boost/boost/1.60.0/boost_1_60_0.tar.gz
 # tar zxvf boost_1_60_0.tar.gz
 # cd boost_1_60_0/
@@ -61,23 +73,33 @@ p7zip, to read/write .7z compressed files (optional)
 xz, to read/write .xz compressed files (optional)
 Make changes to the Makefile.
 Add the full path of the folder where SRILM is extracted, in the SRILM field.
+
 Compile: make NO_TCL=1 MACHINE_TYPE=i686-m64 World
+
 Also runs properly without NO_TCL=1. That is, with TCL. This maybe better.
+
+
 CMPH
 
 Clone from git: git clone https://github.com/zvelo/cmph.git
+
 cd cmph
 Install dependency: sudo apt install libcmph-dev
+
 Configure and compile:
 ./configure
 make
 sudo make install
+
 CMPH is installed globally.
 
 
 
 XML-RPC
-Get package. Clone from git: git clone https://github.com/ensc/xmlrpc-c.git
+
+Get package. 
+
+Clone from git: git clone https://github.com/ensc/xmlrpc-c.git
 cd xmlrpc-c/
 Configure and compile
 ./configure
@@ -85,8 +107,11 @@ make
 sudo make install
 
 COMPILE MOSES
+
+
 Create a folder called tools inside mosesdecoder, and copy some giza executables into it.
 mkdir tools
+
 cp ../giza-pp/GIZA++-v2/GIZA++ ../giza-pp/GIZA++-v2/snt2cooc.out ../giza-pp/mkcls-v2/mkcls tools
 Compile Moses: ./bjam -j8 --with-boost=/home/<user>/translation/boost_1_80_0 --with-srilm=/home/<user>/translation/mosesdecoder/srilm
 				OR
@@ -95,8 +120,8 @@ Compile Moses: ./bjam -j8 --with-boost=/home/<user>/translation/boost_1_80_0 --w
 
 
 
-
 LANGUAGE MODEL
+
 mkdir lang_model
 cd lang_model
  /home/<user>/SMT/mosesdecoder/srilm/bin/i686-m64/ngram-count -text /home/<user>/SMT/mosesdecoder/corpus/enta_clean.en -order 3 -lm output_langmodel
@@ -110,13 +135,14 @@ TRAINING
 Create folder to save MT models
 mkdir working
 
-
-
 cd working/
+
     nohup nice /home/<user>/SMT/mosesdecoder/scripts/training/train-model.perl -root-dir train -corpus /home/<user>/SMT/mosesdecoder/corpus/enta -f en -e ta -alignment grow-diag-final-and -    reordering msd-bidirectional-fe -lm 0:3:/home/<user>/SMT/mosesdecoder/model/ta_bin.lm:8 -external-bin-dir /home/<user>/SMT/mosesdecoder/tools >& training.out &
+    
 To monitor the process in terminal 
 	tail -f training.out	 
 To binarize phrase table.gz
+
 /home/<user>/SMT/mosesdecoder/bin/processPhraseTableMin -in /home/<user>/SMT/mosesdecoder/working/train/model/phrase-table.gz -out /home/<user>/SMT/mosesdecoder/working/train/model/phrase-table -nscores 4 -threads 4 
  To copy and rename to phrase-table
  cp /home/<user>/SMT/mosesdecoder/working/train/model/phrase-table.minphr /home/<user>/SMT/mosesdecoder/working/train/model/phrase-table
